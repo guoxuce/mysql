@@ -1,0 +1,51 @@
+centos6.5 install mysql
+MySQL使用源码包安装时间较长，使用二进制免编译包较快，以下为二进制免编译包安装过程：
+1.下载包并解压
+下载二进制免编译包到/usr/local/src,
+下载地址：5.1_64位二进制包：http://mirrors.sohu.com/mysql/MySQL-5.1/mysql-5.1.73-linux-x86_64-glibc23.tar.gz
+          5.1_32位二进制包：http://mirrors.sohu.com/mysql/MySQL-5.1/mysql-5.1.73-linux-i686-glibc23.tar.gz
+命令：
+cd /usr/local/src
+wget http://mirrors.sohu.com/mysql/MySQL-5.1/mysql-5.1.73-linux-x86_64-glibc23.tar.gz
+tar -zxvf mysql-5.1.73-linux-x86_64-glibc23.tar.gz
+2.将解压后的文件放到指定位置/usr/local/mysql
+命令：
+mv mysql-5.1.73-linux-x86_64-glibc23 /usr/local/mysql
+3.创建mysql用户
+命令：
+useradd -s /sbin.nologin -M mysql #不需要登录，也不需要家目录
+4.创建MySQL安装目录
+命令：
+mkdir -p /data/mysql
+chown -R mysql:mysql /data/mysql
+5.初始化安装
+命令：
+cd /usr/local/mysql
+./scripts/mysql_install_db --user=mysql --datadir=/data/mysql
+6.拷贝配置文件
+命令：
+cp support-files/mysql-large.cnf /etc/my.cnf
+7.拷贝启动脚本并修改其属性
+命令：
+cp support-files/mysql.server /etc/init.d/mysqld
+chmod 755 /etc/init.d/mysqld
+8.修改启动脚本
+命令：
+vim /etc/init.d/mysqld
+修改内容：
+basedir=/usr/local/mysql
+datadir=/data/mysql
+9.加入系统服务项，设置开机启动，启动MySQL
+命令：
+chkconfig --add mysqld
+chkconfig mysqld on
+service mysqld start
+
+备注：
+1.查看是否启动成功
+命令：
+ps aux | grep mysql
+2.查看端口
+netstat -nlp | grep mysql
+3.如果没有启动成功，请到/data/mysql下查看错误日志。
+
