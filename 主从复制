@@ -1,0 +1,51 @@
+MySQL Replication 又叫做AB复制或者主从复制。它主要用于MySQL的时时备份或者读写分离。
+在配置之前先做一下准备工作，配置两台mysql服务器，或者在一台服务器上配置两个端口也可以。
+
+原理：
+将主上的日志，复制到从上，从上根据日志执行相应的操作，从而保证数据的一致性；
+
+同一个服务器上启动多个mysql服务，需要指定端口和socket，basedir，my.cnf等内容
+
+注意：保证同步的两个库是相同的；
+      从上不能进行操作，否则会发生紊乱；
+
+
+安装好两个mysql服务器之后：
+主：
+vim /etc/my.cnf
+server-id = 1
+log-bin=guoxuce  --可自定义
+binlog-do-db=db1,db2   --需要同步的库
+binlog-ignore-db=db3,db4  ---不需要同步的库
+
+重启
+mysql：
+grant replication slave on *.* to 'repl'@'192.168.1.102' identified by '123123';
+flush privileges;
+flush tables with read lock;
+show master status;
++----------------+----------+--------------+------------------+
+| File           | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++----------------+----------+--------------+------------------+
+| guoxuce.000001 |      336 |              |                  |
++----------------+----------+--------------+------------------+
+
+
+从：
+server-id = 11
+replicate-do-db = db1
+replicate-ignore-db = db3
+
+mysql
+slave stop;
+
+change master to master_host='192.168.1.104',master_port=3306,
+master_user='repl',master_password='123123',master_log_file='guoxuce.000001',
+master_log_pos=336;
+
+slave start;
+
+主：
+unlock tables;
+
+在主上进行操作即可；
